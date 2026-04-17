@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import { hasSupabaseConfig } from "@/lib/supabase/config";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,11 +27,21 @@ const navItems = [
   { href: "/orders", label: "我的订单" },
 ];
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let userEmail: string | null = null;
+
+  if (hasSupabaseConfig()) {
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    userEmail = user?.email ?? null;
+  }
+
   return (
     <html
       lang="zh-CN"
@@ -51,6 +63,19 @@ export default function RootLayout({
                   {item.label}
                 </Link>
               ))}
+              {userEmail ? (
+                <>
+                  <span className="text-zinc-500">{userEmail}</span>
+                  <form action="/auth/signout" method="post">
+                    <button
+                      type="submit"
+                      className="text-zinc-600 transition hover:text-zinc-900"
+                    >
+                      退出
+                    </button>
+                  </form>
+                </>
+              ) : null}
             </nav>
           </div>
         </header>

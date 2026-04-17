@@ -1,16 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+import { getSupabaseServiceRoleConfig } from "./config";
 
 export function getSupabaseAdminClient() {
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      "Missing env vars. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
-    );
-  }
+  const { supabaseUrl, supabaseServiceRoleKey } = getSupabaseServiceRoleConfig();
 
-  return createClient(supabaseUrl, serviceRoleKey, {
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

@@ -22,7 +22,7 @@ interface RpcClient {
   rpc: (
     fn: string,
     args: Record<string, unknown>,
-  ) => Promise<{ data: PendingOrderResult | null; error: { code?: string; message: string } | null }>;
+  ) => PromiseLike<{ data: PendingOrderResult | null; error: { code?: string; message: string } | null }>;
 }
 
 export class InsufficientStockError extends Error {}

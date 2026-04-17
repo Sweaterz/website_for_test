@@ -47,9 +47,40 @@ npm install
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
 
 > 如果后续页面中调用 `getSupabaseClient()`，缺少上述变量会抛出错误提示。
+>
+> `SUPABASE_SERVICE_ROLE_KEY` 用于服务端高权限调用，例如库存锁定下单 RPC；不要暴露到前端。
+
+### 配置 Supabase Auth
+
+当前项目已接入以下认证能力：
+
+- 邮箱登录
+- 邮箱注册
+- GitHub OAuth 登录
+
+在 Supabase Dashboard 中需要完成这些配置：
+
+1. 打开 `Authentication -> URL Configuration`
+2. 将 `Site URL` 设置为你的站点地址
+3. 在 `Redirect URLs` 中加入本地回调地址：
+
+```bash
+http://localhost:3000/auth/callback
+```
+
+如需使用 GitHub OAuth，还需要：
+
+1. 打开 `Authentication -> Providers -> GitHub`
+2. 填写 GitHub OAuth App 的 `Client ID` 和 `Client Secret`
+3. 在 GitHub OAuth App 中，将回调地址配置为：
+
+```bash
+https://<your-project-ref>.supabase.co/auth/v1/callback
+```
 
 ### 启动开发服务器
 
@@ -86,18 +117,27 @@ source /Users/haoyi/Documents/website_test/website_for_test/.node-env/activate.s
 npm run build
 ```
 
-## 3. 下一步建议
+## 3. 当前已完成
 
 - 接入 Supabase Auth（邮箱登录 / OAuth）
-- 演出、票档、订单改为真实数据库查询
-- 为“我的订单”增加登录态保护
-- 增加下单流程（锁座/库存校验/支付）
+- 为 `/orders` 增加登录态保护
+- 订单查询按当前登录用户做隔离
+- 提供服务端事务下单 RPC 调用封装
 
-## 4. 数据库 Migration
+## 4. 下一步建议
+
+- 演出、票档、订单列表改为真实数据库查询
+- 增加下单流程剩余环节（支付创建、支付回调、订单状态流转）
+- 补充更多 RLS 策略与集成测试
+- 增加订单超时取消与库存回补
+
+## 5. 数据库 Migration
 
 已提供初始化 schema migration：
 
 - `supabase/migrations/20260416000000_init_ticketing_schema.sql`
+- `supabase/migrations/20260416010000_add_pending_order_locking.sql`
+- `supabase/migrations/20260418000000_enable_auth_rls.sql`
 
 包含以下表：
 
@@ -108,6 +148,12 @@ npm run build
 - `order_items`
 - `users`
 
+其中 `20260418000000_enable_auth_rls.sql` 还包含：
+
+- `auth.users -> public.users` 自动同步 trigger
+- `users / orders / order_items` 的 RLS 策略
+- 仅允许用户读取自己的订单及订单明细
+
 如已安装 Supabase CLI，可在本地执行：
 
 ```bash
@@ -116,7 +162,16 @@ supabase db reset
 
 或将该 SQL 文件在 Supabase SQL Editor 中执行。
 
-## 5. 下单前锁库存（第一版）
+如果你已经在 Supabase 中初始化过旧 schema，记得继续执行新增 migration，否则登录后的 `/orders` 权限和用户同步不会生效。
+
+## 6. 订单与登录态
+
+- `/login`：支持邮箱登录、邮箱注册、GitHub OAuth
+- `/auth/callback`：处理 OAuth / 邮件确认后的 session 交换
+- `/orders`：服务端校验当前登录用户，未登录会跳转到 `/login?redirectTo=/orders`
+- 导航栏：登录后显示当前用户邮箱，并支持退出登录
+
+## 7. 下单前锁库存（第一版）
 
 本项目已提供服务端事务方案：`create_pending_order_with_lock`（PostgreSQL function）。
 
