@@ -7,7 +7,6 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 
 type AuthMode = "sign-in" | "sign-up";
-type OAuthProvider = "google" | "custom:wechat";
 
 function getCallbackUrl(redirectTo: string) {
   const callbackUrl = new URL("/auth/callback", window.location.origin);
@@ -79,7 +78,7 @@ export function LoginForm() {
     });
   }
 
-  function handleOauthSignIn(provider: OAuthProvider) {
+  function handleGoogleSignIn() {
     startTransition(async () => {
       setMessage("");
       setErrorMessage("");
@@ -87,7 +86,7 @@ export function LoginForm() {
       try {
         const supabase = getSupabaseClient();
         const { error } = await supabase.auth.signInWithOAuth({
-          provider,
+          provider: "google",
           options: {
             redirectTo: getCallbackUrl(redirectTo),
           },
@@ -198,7 +197,7 @@ export function LoginForm() {
 
       <button
         type="button"
-        onClick={() => handleOauthSignIn("google")}
+        onClick={handleGoogleSignIn}
         disabled={!isConfigured || isPending}
         className="w-full rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 disabled:cursor-not-allowed disabled:text-zinc-400"
       >
@@ -207,11 +206,11 @@ export function LoginForm() {
 
       <button
         type="button"
-        onClick={() => handleOauthSignIn("custom:wechat")}
-        disabled={!isConfigured || isPending}
-        className="mt-3 w-full rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 disabled:cursor-not-allowed disabled:text-zinc-400"
+        disabled
+        aria-disabled="true"
+        className="mt-3 w-full cursor-not-allowed rounded-md border border-zinc-200 bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-400"
       >
-        使用微信登录
+        微信登录（暂未开放）
       </button>
     </div>
   );
