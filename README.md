@@ -85,6 +85,88 @@ https://<your-project-ref>.supabase.co/auth/v1/callback
 
 微信登录当前仅保留前端入口占位，尚未在 Supabase 中启用自定义 OAuth Provider，也未接入微信开放平台参数。
 
+### Google Cloud Console 超细操作清单
+
+以下步骤用于拿到 Google OAuth 的 `Client ID` 和 `Client Secret`，再填回 Supabase。
+
+1. 打开 Google Cloud Console
+
+```bash
+https://console.cloud.google.com/
+```
+
+2. 登录你的 Google 账号
+3. 在顶部项目选择器中：
+   - 如果已有项目，直接选中
+   - 如果没有项目，点击 `New Project` 创建一个
+4. 进入项目后，打开左侧菜单：
+   - `Google Auth Platform`
+   - 如果你当前控制台里还没有这个入口，也可能显示在 `APIs & Services`
+5. 第一次使用时，先配置品牌信息或同意页
+   - 按页面提示填写应用名称
+   - 填写用户支持邮箱
+   - 填写开发者联系邮箱
+   - 保存
+6. 如果页面要求配置受众：
+   - 开发阶段通常先选择仅测试用户可用的模式
+   - 将你自己的 Google 账号加入测试用户
+7. 进入 `Clients`
+8. 点击 `Create Client`
+9. 在应用类型里选择 `Web application`
+10. 输入一个好识别的名字，例如：
+
+```bash
+website_for_test-web
+```
+
+11. 在 `Authorized JavaScript origins` 中添加前端站点地址
+    - 本地开发至少加入：
+
+```bash
+http://localhost:3000
+```
+
+    - 如果你未来部署到正式域名，也要把正式站点域名加进去，例如：
+
+```bash
+https://your-domain.com
+```
+
+12. 在 `Authorized redirect URIs` 中添加 Supabase 的回调地址：
+
+```bash
+https://<your-project-ref>.supabase.co/auth/v1/callback
+```
+
+13. 点击 `Create`
+14. 创建成功后，复制页面里的：
+    - `Client ID`
+    - `Client Secret`
+15. 回到 Supabase Dashboard：
+    - 打开 `Authentication -> Providers -> Google`
+    - 打开启用开关
+    - 粘贴 `Client ID`
+    - 粘贴 `Client Secret`
+    - 保存
+16. 再检查 `Authentication -> URL Configuration`
+    - `Site URL` 是否已配置
+    - `Redirect URLs` 是否已包含：
+
+```bash
+http://localhost:3000/auth/callback
+```
+
+17. 本地启动项目后，进入 `/login`
+18. 点击 `使用 Google 登录`
+19. 如果浏览器成功跳转到 Google 授权页，再跳回 `/auth/callback` 并最终回到站内页面，就说明配置生效
+
+常见问题排查：
+
+- 如果 Google 报 `redirect_uri_mismatch`，通常是 `Authorized redirect URIs` 没填 Supabase 回调地址，或者地址少了 `https`
+- 如果 Supabase 跳转后没回到本地页面，通常是 `Redirect URLs` 没加入 `http://localhost:3000/auth/callback`
+- 如果看不到授权按钮效果，先确认 Supabase 的 Google Provider 已保存并启用
+- 如果测试账号无法登录，检查 Google 侧测试用户名单或受众配置
+
 ### 启动开发服务器
 
 激活本地 Node 环境并安装依赖后，执行：
