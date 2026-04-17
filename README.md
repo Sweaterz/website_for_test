@@ -15,7 +15,26 @@
 
 ## 1. 本地运行
 
+### 激活本地 Node 环境
+
+本仓库已提供一个项目内隔离的 Node 环境，避免依赖系统全局 `node` / `npm`。
+
+在项目根目录执行：
+
+```bash
+source /Users/haoyi/Documents/website_test/website_for_test/.node-env/activate.sh
+```
+
+激活后可用以下命令确认：
+
+```bash
+node -v
+npm -v
+```
+
 ### 安装依赖
+
+激活本地 Node 环境后，执行：
 
 ```bash
 npm install
@@ -34,6 +53,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ### 启动开发服务器
 
+激活本地 Node 环境并安装依赖后，执行：
+
 ```bash
 npm run dev
 ```
@@ -48,6 +69,21 @@ npm run build  # 生产构建
 npm run start  # 运行生产构建
 npm run lint   # ESLint 检查
 npm run test   # 运行基础单元测试
+```
+
+常见本地操作示例：
+
+```bash
+source /Users/haoyi/Documents/website_test/website_for_test/.node-env/activate.sh
+npm install
+npm run dev
+```
+
+构建生产版本：
+
+```bash
+source /Users/haoyi/Documents/website_test/website_for_test/.node-env/activate.sh
+npm run build
 ```
 
 ## 3. 下一步建议
