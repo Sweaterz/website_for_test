@@ -60,7 +60,8 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 - 邮箱登录
 - 邮箱注册
-- GitHub OAuth 登录
+- Google OAuth 登录
+- 微信 OAuth 登录（通过 Supabase Custom OAuth Provider）
 
 在 Supabase Dashboard 中需要完成这些配置：
 
@@ -72,15 +73,34 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 http://localhost:3000/auth/callback
 ```
 
-如需使用 GitHub OAuth，还需要：
+如需使用 Google OAuth，还需要：
 
-1. 打开 `Authentication -> Providers -> GitHub`
-2. 填写 GitHub OAuth App 的 `Client ID` 和 `Client Secret`
-3. 在 GitHub OAuth App 中，将回调地址配置为：
+1. 打开 `Authentication -> Providers -> Google`
+2. 填写 Google OAuth 的 `Client ID` 和 `Client Secret`
+3. 在 Google Cloud Console 中，将 Supabase 回调地址加入 `Authorized redirect URIs`：
 
 ```bash
 https://<your-project-ref>.supabase.co/auth/v1/callback
 ```
+
+如需使用微信登录，还需要：
+
+1. 打开 `Authentication -> Providers -> Custom OAuth`
+2. 新建一个自定义 OAuth Provider，并将 `identifier` 配置为：
+
+```bash
+wechat
+```
+
+3. 按你接入的微信开放平台配置对应的授权地址、Token 地址、Client ID、Client Secret 与 scopes
+4. 将 Supabase 回调地址配置到微信开放平台：
+
+```bash
+https://<your-project-ref>.supabase.co/auth/v1/callback
+```
+
+> 当前项目代码里微信登录按钮调用的是 `provider: "custom:wechat"`。
+> 如果你在 Supabase 里使用的自定义 provider 标识不是 `wechat`，需要同步修改 [app/login/login-form.tsx](/Users/haoyi/Documents/website_test/website_for_test/app/login/login-form.tsx)。
 
 ### 启动开发服务器
 
@@ -166,7 +186,7 @@ supabase db reset
 
 ## 6. 订单与登录态
 
-- `/login`：支持邮箱登录、邮箱注册、GitHub OAuth
+- `/login`：支持邮箱登录、邮箱注册、Google OAuth、微信 OAuth
 - `/auth/callback`：处理 OAuth / 邮件确认后的 session 交换
 - `/orders`：服务端校验当前登录用户，未登录会跳转到 `/login?redirectTo=/orders`
 - 导航栏：登录后显示当前用户邮箱，并支持退出登录
